@@ -129,9 +129,32 @@ class circle ?(label : string = "")
               h : int            height of the rectangle
  *)
 
-  (***
-   *** Your implementation of the rectangle class goes here
-   ***)
+class rectangle ?(label : string = "")
+                ?(col : color = black)
+                ?(layer : int = 20)
+                ?(textcol : color = red)
+                ?(linewidth : int = cLINEWIDTH) 
+                (m : point)
+                (h : int)
+                (w : int) =
+  object
+    inherit drawable ~label ~layer col
+    val textcolor : color = textcol
+    val linewidth : int = linewidth
+    val anchor : point = m
+    val height : int = h
+    val width : int = w
+                       
+    method draw =
+      let (x, y) as p = anchor#round in
+      set_line_width linewidth;
+      set_color background;
+      fill_rect (x - w/2) (y - h/2) w h;
+      set_color color;
+      draw_rect (x - w/2) (y - h/2) w h;
+      set_color textcolor;
+      draw_text_centered label (x, y)
+  end
      
 (* Class square -- nodes depicted with a small square
    Arguments: ?label : string    optional label for the node (default: "")
@@ -143,9 +166,17 @@ class circle ?(label : string = "")
               w : int            width of the square
  *)
    
-  (***
-   *** Your implementation of the square class goes here
-   ***)
+class square ?(label : string = "")
+                ?(col : color = black)
+                ?(layer : int = 20)
+                ?(textcol : color = red)
+                ?(linewidth : int = cLINEWIDTH) 
+                (m : point)
+                (w : int) =
+  object
+    inherit rectangle ~label ~layer ~col ~textcol ~linewidth m w w 
+
+  end
     
 (* Class edge -- an edge between two points
    Arguments: ?label : string    optional label for the edge (default: "")
@@ -157,9 +188,31 @@ class circle ?(label : string = "")
               target : point     target point of the edge
  *)
    
-  (***
-   *** Your implementation of the edge class goes here
-   ***)
+class edge ?(label : string = "")
+                ?(col : color = black)
+                ?(layer : int = 10)
+                ?(textcol : color = red)
+                ?(linewidth : int = cLINEWIDTH) 
+                (s : point) 
+                (t : point) =
+  object
+    inherit drawable ~label ~layer col
+    val textcolor : color = textcol
+    val linewidth : int = linewidth
+    val s : point = s
+    val t : point = t 
+                       
+    method draw =
+      let (xs, ys) = s#round in
+      let (xt, yt) = t#round in
+      set_line_width linewidth;
+      set_color background;
+      moveto xs ys;
+      set_color color;
+      lineto xt yt;
+      set_color textcolor;
+      draw_text_centered label ((xs + xt)/2, (ys + yt)/2)
+  end
      
 (* Class zone -- a zone box that surrounds a set of points
    Arguments: ?label : string      optional label for the edge (default: "")
@@ -173,9 +226,35 @@ class circle ?(label : string = "")
               points : point list  points defining the zone to be enclosed
  *)
    
-  (***
-   *** Your implementation of the zone class goes here
-   ***)
+class zone ?(label : string = "")
+                ?(col : color = black)
+                ?(textcol : color = red)
+                ?(layer : int = 0)
+                ?(border : int = 20)
+                ?(linewidth : int = cLINEWIDTH) 
+                (plst : point list) =
+  object
+    inherit drawable ~label ~layer col
+    val textcolor : color = textcol
+    val linewidth : int = linewidth
+    val border : int = border
+    val pointlst : point list = plst
+    
+    method draw =                   
+      let plst = List.map (fun p -> p#round) pointlst in
+      let xlst, ylst = List.split plst in 
+      let x_max = maximum xlst in
+      let x_min = minimum xlst in 
+      let y_max = maximum ylst in
+      let y_min = minimum ylst in
+      let width = x_max - x_min in
+      let height = y_max - y_min in 
+      set_color color;
+      draw_rect (x_min - border) (y_min - border) (width + 2*border) (height + 2*border);
+      set_line_width linewidth;
+      set_color textcolor;
+      draw_text_centered label (x_min + width/2, y_min + height/2)
+  end
      
 (*======================================================================
 Time estimate
